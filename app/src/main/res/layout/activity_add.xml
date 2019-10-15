@@ -16,7 +16,7 @@
         android:focusable="false">
 
         <androidx.appcompat.widget.AppCompatEditText
-            style="@style/HintText"
+
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/customer" />
@@ -31,7 +31,8 @@
         android:layout_marginTop="20dp"
         android:layout_marginEnd="20dp"
         android:layout_marginRight="20dp"
-        android:focusable="false">
+
+        >
 
         <androidx.appcompat.widget.AppCompatEditText
             android:layout_width="match_parent"
@@ -94,22 +95,23 @@
             android:hint="@string/price"
             android:inputType="number" />
     </com.google.android.material.textfield.TextInputLayout>
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/date"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/price"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginRight="20dp"
-        android:focusable="false">
 
-        <androidx.appcompat.widget.AppCompatEditText
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_below="@+id/price"
+        android:layout_margin="20dp"
+        android:layout_height="wrap_content">
+        <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:id="@+id/date"
+            android:layout_below="@+id/price"
+            android:clickable="true"
             android:hint="@string/date"
-            android:inputType="date" />
+            android:focusable="false" />
+
     </com.google.android.material.textfield.TextInputLayout>
+
 
 </RelativeLayout>
