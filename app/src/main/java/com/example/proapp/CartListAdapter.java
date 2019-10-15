@@ -7,12 +7,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.bumptech.glide.Glide;
-
 import java.util.List;
 
 public class CartListAdapter extends RecyclerView.Adapter<CartListAdapter.MyViewHolder> {
@@ -43,12 +40,10 @@ public class CartListAdapter extends RecyclerView.Adapter<CartListAdapter.MyView
                 .load(item.getThumbnail())
                 .into(holder.thumbnail);
     }
-
     @Override
     public int getItemCount() {
         return cartlist.size();
     }
-
     public class MyViewHolder extends RecyclerView.ViewHolder {
         public TextView name, description, price;
         public ImageView thumbnail;

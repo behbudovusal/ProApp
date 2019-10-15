@@ -7,21 +7,37 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay">
+        <androidx.appcompat.widget.Toolbar
+            android:layout_width="match_parent"
+            android:layout_height="?actionBarSize"
+            android:theme="@style/AppTheme.PopupOverlay"
+            android:id="@+id/toolbar"
+            android:background="@android:color/white">
+
+        </androidx.appcompat.widget.Toolbar>
+
+    </com.google.android.material.appbar.AppBarLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|right"
+        android:layout_gravity="bottom|end"
         android:layout_margin="10dp"
         android:src="@drawable/plus"
         android:id="@+id/floatbutton"
         app:fabSize="normal"/>
 
     <androidx.recyclerview.widget.RecyclerView
+        android:layout_marginTop="60dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/recycler_view"
-        android:orientation="vertical"/>
+        android:orientation="vertical"
+        />
 
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

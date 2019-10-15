@@ -4,5 +4,11 @@
     <string name="my_cart">My Cart</string>
     <string name="delete">DELETE</string>
     <string name="tehvil">Tehvil</string>
+    <string name="customer">Customer</string>
+    <string name="telephone">Telephone</string>
+    <string name="title">Title</string>
+    <string name="price">Price</string>
+    <string name="description">Description</string>
+    <string name="date">Date</string>
 
 </resources>
