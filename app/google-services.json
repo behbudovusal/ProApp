@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "59583479315",
+    "firebase_url": "https://proapp-5375a.firebaseio.com",
+    "project_id": "proapp-5375a",
+    "storage_bucket": "proapp-5375a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:59583479315:android:bbcbf852f4bff499aac9e6",
+        "android_client_info": {
+          "package_name": "com.example.proapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "59583479315-tms27dbpoo4t4bsuk23f668mabe69n0j.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBr_MLZl194FSKj7asy5f2TCVfhrU1HET4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "59583479315-tms27dbpoo4t4bsuk23f668mabe69n0j.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

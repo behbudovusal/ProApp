@@ -10,6 +10,7 @@
     <string name="price">Price</string>
     <string name="description">Description</string>
     <string name="date">Date</string>
+    <string name="tap_to_upload">Tap to Upload</string>
 
 
 </resources>
