@@ -5,12 +5,13 @@
     <string name="delete">DELETE</string>
     <string name="tehvil">Tehvil</string>
     <string name="customer">Customer</string>
+    <string name="tap_to_upload_image">Tap to Upload image</string>
     <string name="telephone">Telephone</string>
     <string name="title">Title</string>
     <string name="price">Price</string>
     <string name="description">Description</string>
     <string name="date">Date</string>
-    <string name="tap_to_upload">Tap to Upload</string>
+    <string name="time">Time</string>
 
 
 </resources>
