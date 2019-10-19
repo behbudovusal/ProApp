@@ -12,6 +12,9 @@
     <string name="description">Description</string>
     <string name="date">Date</string>
     <string name="time">Time</string>
+    <string name="adress">Adress</string>
+    <string name="sort_by_date">Sort by date</string>
+    <string name="exit">Exit</string>
 
 
 </resources>
