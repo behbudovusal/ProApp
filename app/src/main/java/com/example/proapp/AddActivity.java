@@ -61,7 +61,7 @@ public class AddActivity extends AppCompatActivity {
                             }
                         }, year, month, day);
 
-                picker.setButton(DatePickerDialog.BUTTON_NEGATIVE, "Ləgv et", picker);
+                picker.setButton(DatePickerDialog.BUTTON_NEGATIVE, "Ləğv et", picker);
                 picker.setButton(DatePickerDialog.BUTTON_POSITIVE, "Seç", picker);
                 picker.show();
 
@@ -78,7 +78,7 @@ public class AddActivity extends AppCompatActivity {
                         timetext.setText(hourOfDay+":"+minute);
                     }
                 },hour,minut,true);
-                timer.setButton(DatePickerDialog.BUTTON_NEGATIVE, "Ləgv et", timer);
+                timer.setButton(DatePickerDialog.BUTTON_NEGATIVE, "Ləğv et", timer);
                 timer.setButton(DatePickerDialog.BUTTON_POSITIVE, "Seç", timer);
                 timer.show();
             }
