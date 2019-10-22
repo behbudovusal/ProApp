@@ -2,35 +2,34 @@ package com.example.proapp;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputType;
-import android.util.Log;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TimePicker;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.squareup.picasso.Picasso;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+
 
 import java.util.Calendar;
 
@@ -43,10 +42,12 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
     private int PICK_IMAGE_REQUEST = 1;
     int day, month, year, hour, minut;
     Button addbtn;
-    DatabaseReference ref;
     Products product;
     Long tsLong;
     String ts;
+    Uri uri;
+    DatabaseReference ref;
+    ProgressBar mprogressbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,12 +63,13 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
         adresstext = findViewById(R.id.adress);
         desctext = findViewById(R.id.description);
         phonetext = findViewById(R.id.phone);
-
-        product = new Products();
-        ref = FirebaseDatabase.getInstance().getReference().child("product");
+        mprogressbar=findViewById(R.id.progressbar);
         addbtn.setOnClickListener(this);
         datetext.setOnClickListener(this);
         timetext.setOnClickListener(this);
+        product = new Products();
+        ref = FirebaseDatabase.getInstance().getReference().child("product");
+       //get current time and date
         final Calendar cldr = Calendar.getInstance();
         day = cldr.get(Calendar.DAY_OF_MONTH);
         month = cldr.get(Calendar.MONTH);
@@ -79,17 +81,17 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
         timetext.setInputType(InputType.TYPE_NULL);
         timetext.setText(hour + " : " + minut);
     }
-
+    //get choosen img uri
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
 
-            Uri uri = data.getData();
+            uri = data.getData();
             Glide.with(this).load(uri).into(chooseimg);
         }
     }
-
+//choose imgage
     public void openFilechoose(View view) {
         Intent intent = new Intent();
         intent.setType("image/*");
@@ -98,6 +100,7 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
 
     }
 
+//clear edittext
     public void cleartext() {
         customertext.getText().clear();
         desctext.getText().clear();
@@ -110,9 +113,12 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+
+            //upload data
             case R.id.add: {
                 tsLong = System.currentTimeMillis() / 1000;
                 ts = tsLong.toString();
+                uploadImagetoFirebase(ts,uri);
                 product.setTitle(titletext.getText().toString());
                 product.setCustomer(customertext.getText().toString());
                 product.setAdress(adresstext.getText().toString());
@@ -168,6 +174,37 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
                 break;
             }
         }
+    }
+
+    private void uploadImagetoFirebase(String ts, Uri uri) {
+
+        // Create a storage reference from our app
+        if (uri != null)
+        {
+            StorageReference storageRef = FirebaseStorage.getInstance().getReference("uploadimage");
+            StorageReference imageRef = storageRef.child(ts + "/img." + getFileExtension(uri));
+            imageRef.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+
+                    Toast.makeText(getApplicationContext(),taskSnapshot.getUploadSessionUri().toString(),Toast.LENGTH_LONG).show();
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+
+                }
+            });
+        }
+        else {
+            Toast.makeText(getApplicationContext(),"Şəkil seçin",Toast.LENGTH_LONG).show();
+        }
+
+    }
+    private String getFileExtension(Uri uri){
+        ContentResolver cR=getContentResolver();
+        MimeTypeMap mime=MimeTypeMap.getSingleton();
+        return mime.getExtensionFromMimeType(cR.getType(uri));
     }
 }
 
