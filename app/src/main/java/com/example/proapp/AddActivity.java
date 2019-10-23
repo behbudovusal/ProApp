@@ -16,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TimePicker;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,6 +24,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -63,13 +65,13 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
         adresstext = findViewById(R.id.adress);
         desctext = findViewById(R.id.description);
         phonetext = findViewById(R.id.phone);
-        mprogressbar=findViewById(R.id.progressbar);
+        mprogressbar = findViewById(R.id.progressbar);
         addbtn.setOnClickListener(this);
         datetext.setOnClickListener(this);
         timetext.setOnClickListener(this);
         product = new Products();
         ref = FirebaseDatabase.getInstance().getReference().child("product");
-       //get current time and date
+        //get current time and date
         final Calendar cldr = Calendar.getInstance();
         day = cldr.get(Calendar.DAY_OF_MONTH);
         month = cldr.get(Calendar.MONTH);
@@ -81,6 +83,7 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
         timetext.setInputType(InputType.TYPE_NULL);
         timetext.setText(hour + " : " + minut);
     }
+
     //get choosen img uri
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -91,7 +94,8 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
             Glide.with(this).load(uri).into(chooseimg);
         }
     }
-//choose imgage
+
+    //choose imgage
     public void openFilechoose(View view) {
         Intent intent = new Intent();
         intent.setType("image/*");
@@ -100,7 +104,7 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
 
     }
 
-//clear edittext
+    //clear edittext
     public void cleartext() {
         customertext.getText().clear();
         desctext.getText().clear();
@@ -118,7 +122,7 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
             case R.id.add: {
                 tsLong = System.currentTimeMillis() / 1000;
                 ts = tsLong.toString();
-                uploadImagetoFirebase(ts,uri);
+                uploadImagetoFirebase(ts, uri);
                 product.setTitle(titletext.getText().toString());
                 product.setCustomer(customertext.getText().toString());
                 product.setAdress(adresstext.getText().toString());
@@ -126,6 +130,7 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
                 product.setTime(timetext.getText().toString());
                 product.setDescription(desctext.getText().toString());
                 product.setPhone(phonetext.getText().toString());
+                product.setPrice(pricetext.getText().toString());
                 product.setId(ts);
                 ref.child(ts).setValue(product).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -143,8 +148,7 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
                 });
                 break;
             }
-            case R.id.date:
-            {
+            case R.id.date: {
                 // date picker dialog
                 picker = new DatePickerDialog(AddActivity.this,
                         new DatePickerDialog.OnDateSetListener() {
@@ -159,8 +163,7 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
                 picker.show();
                 break;
             }
-            case R.id.time:
-            {
+            case R.id.time: {
                 //clock dialog
                 TimePickerDialog timer = new TimePickerDialog(AddActivity.this, new TimePickerDialog.OnTimeSetListener() {
                     @Override
@@ -176,35 +179,37 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
         }
     }
 
-    private void uploadImagetoFirebase(String ts, Uri uri) {
+    private void uploadImagetoFirebase(final String ts, Uri uri) {
 
         // Create a storage reference from our app
-        if (uri != null)
-        {
+        if (uri != null) {
             StorageReference storageRef = FirebaseStorage.getInstance().getReference("uploadimage");
             StorageReference imageRef = storageRef.child(ts + "/img." + getFileExtension(uri));
             imageRef.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-
-                    Toast.makeText(getApplicationContext(),taskSnapshot.getUploadSessionUri().toString(),Toast.LENGTH_LONG).show();
+                    ref = FirebaseDatabase.getInstance().getReference().child("product");
+                    //Task<Uri> urlTask = taskSnapshot.getStorage().getDownloadUrl();
+                    //ref.child(ts).setValue(urlTask);
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
-
+                    Toast.makeText(getApplicationContext(),e.toString(),Toast.LENGTH_LONG).show();
                 }
             });
-        }
-        else {
-            Toast.makeText(getApplicationContext(),"Şəkil seçin",Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(getApplicationContext(), "Şəkil seçin", Toast.LENGTH_LONG).show();
         }
 
     }
-    private String getFileExtension(Uri uri){
-        ContentResolver cR=getContentResolver();
-        MimeTypeMap mime=MimeTypeMap.getSingleton();
+
+    private String getFileExtension(Uri uri) {
+        ContentResolver cR = getContentResolver();
+        MimeTypeMap mime = MimeTypeMap.getSingleton();
         return mime.getExtensionFromMimeType(cR.getType(uri));
     }
+
+
 }
 
