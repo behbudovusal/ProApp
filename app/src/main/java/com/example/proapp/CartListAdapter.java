@@ -44,6 +44,7 @@ public class CartListAdapter extends RecyclerView.Adapter<CartListAdapter.MyView
         Glide.with(context)
                 .load(item.getThumbnail())
                 .into(holder.thumbnail);
+
         holder.frameview.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

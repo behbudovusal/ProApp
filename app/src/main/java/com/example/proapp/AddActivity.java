@@ -1,6 +1,7 @@
 package com.example.proapp;
 
 import android.app.DatePickerDialog;
+import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
 import android.content.ContentResolver;
 import android.content.Intent;
@@ -13,6 +14,7 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -22,10 +24,13 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
@@ -37,6 +42,7 @@ import java.util.Calendar;
 
 public class AddActivity extends AppCompatActivity implements View.OnClickListener {
 
+    ProgressDialog dialog;
     EditText datetext, timetext;
     TextInputEditText customertext, pricetext, titletext, adresstext, desctext, phonetext;
     DatePickerDialog picker;
@@ -49,7 +55,8 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
     String ts;
     Uri uri;
     DatabaseReference ref;
-    ProgressBar mprogressbar;
+    LinearLayout liner;
+    TextInputLayout customerlayout, pricelayout, titlelayout, phonelayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,7 +72,11 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
         adresstext = findViewById(R.id.adress);
         desctext = findViewById(R.id.description);
         phonetext = findViewById(R.id.phone);
-        mprogressbar = findViewById(R.id.progressbar);
+        liner = findViewById(R.id.textinput_linear);
+        customerlayout = findViewById(R.id.customerlayout);
+        pricelayout = findViewById(R.id.pricelayout);
+        titlelayout = findViewById(R.id.titlelayout);
+        phonelayout = findViewById(R.id.phonelayout);
         addbtn.setOnClickListener(this);
         datetext.setOnClickListener(this);
         timetext.setOnClickListener(this);
@@ -78,10 +89,10 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
         year = cldr.get(Calendar.YEAR);
         hour = cldr.get(Calendar.HOUR_OF_DAY);
         minut = cldr.get(Calendar.MINUTE);
-        datetext.setText(day + "." + (month + 1) + "." + year);
-        datetext.setInputType(InputType.TYPE_NULL);
-        timetext.setInputType(InputType.TYPE_NULL);
-        timetext.setText(hour + " : " + minut);
+//        datetext.setText(day + "." + (month + 1) + "." + year);
+//        datetext.setInputType(InputType.TYPE_NULL);
+//        timetext.setInputType(InputType.TYPE_NULL);
+//        timetext.setText(hour + " : " + minut);
     }
 
     //get choosen img uri
@@ -89,13 +100,12 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
-
             uri = data.getData();
             Glide.with(this).load(uri).into(chooseimg);
         }
     }
 
-    //choose imgage
+    //choose image
     public void openFilechoose(View view) {
         Intent intent = new Intent();
         intent.setType("image/*");
@@ -120,32 +130,21 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
 
             //upload data
             case R.id.add: {
-                tsLong = System.currentTimeMillis() / 1000;
-                ts = tsLong.toString();
-                uploadImagetoFirebase(ts, uri);
-                product.setTitle(titletext.getText().toString());
-                product.setCustomer(customertext.getText().toString());
-                product.setAdress(adresstext.getText().toString());
-                product.setDate(datetext.getText().toString());
-                product.setTime(timetext.getText().toString());
-                product.setDescription(desctext.getText().toString());
-                product.setPhone(phonetext.getText().toString());
-                product.setPrice(pricetext.getText().toString());
-                product.setId(ts);
-                ref.child(ts).setValue(product).addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        cleartext();
-                        Toast.makeText(getApplicationContext(), "Məlumatlar yükləndi", Toast.LENGTH_LONG).show();
-                    }
+                if (validateAll()) {
+                    tsLong = System.currentTimeMillis() / 1000;
+                    ts = tsLong.toString();
 
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
+                    if (uri != null) {
+                        {
+                            progress();
+                            uploaddata();
+                            uploadImagetoFirebase(ts, uri);
 
+                        }
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Şəkil seçin", Toast.LENGTH_LONG).show();
                     }
-                });
+                }
                 break;
             }
             case R.id.date: {
@@ -181,27 +180,50 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
 
     private void uploadImagetoFirebase(final String ts, Uri uri) {
 
-        // Create a storage reference from our app
         if (uri != null) {
             StorageReference storageRef = FirebaseStorage.getInstance().getReference("uploadimage");
-            StorageReference imageRef = storageRef.child(ts + "/img." + getFileExtension(uri));
-            imageRef.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            final StorageReference imageRef = storageRef.child(ts + "/img." + getFileExtension(uri));
+            Task<Uri> task = imageRef.putFile(uri).continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
                 @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    ref = FirebaseDatabase.getInstance().getReference().child("product");
-                    //Task<Uri> urlTask = taskSnapshot.getStorage().getDownloadUrl();
-                    //ref.child(ts).setValue(urlTask);
+                public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                    return imageRef.getDownloadUrl();
                 }
-            }).addOnFailureListener(new OnFailureListener() {
+            }).addOnCompleteListener(new OnCompleteListener<Uri>() {
                 @Override
-                public void onFailure(@NonNull Exception e) {
-                    Toast.makeText(getApplicationContext(),e.toString(),Toast.LENGTH_LONG).show();
+                public void onComplete(@NonNull Task<Uri> task) {
+                    Uri downloadUri = task.getResult();
+                    String downloadURL = downloadUri.toString();
+                    ref.child(ts).child("img").setValue(downloadURL);
                 }
             });
-        } else {
-            Toast.makeText(getApplicationContext(), "Şəkil seçin", Toast.LENGTH_LONG).show();
         }
+    }
 
+    private void uploaddata() {
+        product.setTitle(titletext.getText().toString());
+        product.setCustomer(customertext.getText().toString());
+        product.setAdress(adresstext.getText().toString());
+        product.setDate(datetext.getText().toString());
+        product.setTime(timetext.getText().toString());
+        product.setDescription(desctext.getText().toString());
+        product.setPhone(phonetext.getText().toString());
+        product.setPrice(pricetext.getText().toString());
+        product.setId(ts);
+        ref.child(ts).setValue(product).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                cleartext();
+                Toast.makeText(getApplicationContext(), "Məlumatlar yükləndi", Toast.LENGTH_LONG).show();
+
+            }
+
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
+
+            }
+        });
     }
 
     private String getFileExtension(Uri uri) {
@@ -210,6 +232,59 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
         return mime.getExtensionFromMimeType(cR.getType(uri));
     }
 
+    public void progress() {
+        dialog = new ProgressDialog(AddActivity.this);
+        dialog.setMessage("Yüklənir..."); // Setting Message
+        dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER); // Progress Dialog Style Spinner
+        dialog.show(); // Display Progress Dialog
+        dialog.setCancelable(false);
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    Thread.sleep(2000);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                dialog.dismiss();
+                Intent intent=new Intent(AddActivity.this,MainActivity.class);
+                startActivity(intent);
+            }
+        }).start();
+    }
 
+    private boolean validateText(TextInputEditText txtinput, TextInputLayout txtlayout) {
+        String input = txtinput.getText().toString();
+        if (input.isEmpty()) {
+            txtlayout.setError(input + " daxil edin");
+            return false;
+        } else {
+            txtlayout.setError(null);
+            return true;
+        }
+    }
+
+    private boolean validatePhone(TextInputEditText txtinput, TextInputLayout txtlayout) {
+        String input = txtinput.getText().toString();
+        if (input.isEmpty()) {
+            txtlayout.setError(input + " daxil edin");
+            return false;
+
+        } else if (input.length() < 11) {
+
+            txtlayout.setError(input + " telefon nömrəsini düzgün daxil edin");
+            return false;
+
+        } else {
+            txtlayout.setError(null);
+            return true;
+        }
+    }
+    private boolean validateAll() {
+        boolean validateCustomer = validateText(customertext, customerlayout);
+        boolean validateTitle = validateText(titletext, titlelayout);
+        boolean validatePrice = validateText(pricetext, pricelayout);
+        boolean phonevalidate = validatePhone(phonetext, phonelayout);
+        return validateCustomer && validatePrice && validateTitle && phonevalidate;
+    }
 }
 

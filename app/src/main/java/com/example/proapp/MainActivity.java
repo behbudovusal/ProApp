@@ -19,27 +19,31 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
-
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
-
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity implements RecyclerItemTouchHelper.RecyclerItemTouchHelperListener {
 
     private RecyclerView recyclerView;
-    private RecyclerView.LayoutManager layoutManager;
-    private ApiInterface apiInterface;
-    private List<Item> cartlist;
-    private CartListAdapter mAdapter;
+    private ProductAdapter mAdapter;
+    ArrayList<Products> list;
+    DatabaseReference reference;
     private CoordinatorLayout coordinatorLayout;
     FloatingActionButton fab;
+    ProgressBar mprogressbar;
+    TextView txtmehsul;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,25 +53,44 @@ public class MainActivity extends AppCompatActivity implements RecyclerItemTouch
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(R.string.app_name);
         recyclerView = findViewById(R.id.recycler_view);
+        mprogressbar=findViewById(R.id.progress_circular);
+        txtmehsul=findViewById(R.id.txtmehsul);
         coordinatorLayout = findViewById(R.id.coordinator_layout);
-        apiInterface = ApiClient.getApiClient().create(ApiInterface.class);
-        Call<List<Item>> call = apiInterface.getItems();
-        call.enqueue(new Callback<List<Item>>() {
+        list = new ArrayList<>();
+        reference = FirebaseDatabase.getInstance().getReference().child("product");
+        Query query=reference.orderByChild("date");
+        query.addValueEventListener(new ValueEventListener() {
             @Override
-            public void onResponse(Call<List<Item>> call, Response<List<Item>> response) {
-                cartlist = response.body();
-                mAdapter = new CartListAdapter(getApplicationContext(), cartlist);
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                list.clear();
+                ArrayList<String> keys = new ArrayList<String>();
+                mprogressbar.setVisibility(View.VISIBLE);
+                if (dataSnapshot.getChildrenCount()==0)
+                {
+                    txtmehsul.setVisibility(View.VISIBLE);
+                }
+                else {
+                txtmehsul.setVisibility(View.INVISIBLE);
+                }
+                for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
+                    Products p = dataSnapshot1.getValue(Products.class);
+                    list.add(p);
+                    keys.add(dataSnapshot1.getKey());
+
+                }
+                mAdapter = new ProductAdapter(getApplicationContext(), list,keys);
                 RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
                 recyclerView.setLayoutManager(mLayoutManager);
                 recyclerView.setItemAnimator(new DefaultItemAnimator());
                 recyclerView.addItemDecoration(new DividerItemDecoration(getApplicationContext(), DividerItemDecoration.VERTICAL));
                 recyclerView.setAdapter(mAdapter);
-
+                mAdapter.notifyDataSetChanged();
+                mprogressbar.setVisibility(View.INVISIBLE);
             }
 
             @Override
-            public void onFailure(Call<List<Item>> call, Throwable t) {
-                Log.e("vul", t.toString());
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
             }
         });
 
@@ -85,30 +108,30 @@ public class MainActivity extends AppCompatActivity implements RecyclerItemTouch
 
     @Override
     public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction, int position) {
-        if (viewHolder instanceof CartListAdapter.MyViewHolder) {
-            // get the removed item name to display it in snack bar
-            String name = cartlist.get(viewHolder.getAdapterPosition()).getName();
-
-            // backup of removed item for undo purpose
-            final Item deletedItem = cartlist.get(viewHolder.getAdapterPosition());
-            final int deletedIndex = viewHolder.getAdapterPosition();
-
+        if (viewHolder instanceof ProductAdapter.ProductViewHolder) {
             // remove the item from recycler view
             mAdapter.removeItem(viewHolder.getAdapterPosition());
 
-            // showing snack bar with Undo option
-            Snackbar snackbar = Snackbar
-                    .make(coordinatorLayout, name + " removed from cart!", Snackbar.LENGTH_LONG);
-            snackbar.setAction("UNDO", new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
+            // get the removed item name to display it in snack bar
+            //String name = list.get(viewHolder.getAdapterPosition()).getTitle();
 
-                    // undo is selected, restore the deleted item
-                    mAdapter.restoreItem(deletedItem, deletedIndex);
-                }
-            });
-            snackbar.setActionTextColor(Color.YELLOW);
-            snackbar.show();
+            // backup of removed item for undo purpose
+           // final Products deletedItem = list.get(viewHolder.getAdapterPosition());
+            //final int deletedIndex = viewHolder.getAdapterPosition();
+
+//            // showing snack bar with Undo option
+//            Snackbar snackbar = Snackbar
+//                    .make(coordinatorLayout, name + " removed from cart!", Snackbar.LENGTH_LONG);
+//            snackbar.setAction("UNDO", new View.OnClickListener() {
+//                @Override
+//                public void onClick(View view) {
+//
+//                    // undo is selected, restore the deleted item
+//                    mAdapter.restoreItem(deletedItem, deletedIndex);
+//                }
+//            });
+//            snackbar.setActionTextColor(Color.YELLOW);
+//            snackbar.show();
         }
     }
 
@@ -123,16 +146,16 @@ public class MainActivity extends AppCompatActivity implements RecyclerItemTouch
 
         switch (item.getItemId()) {
 
-            case R.id.exit:{
+            case R.id.exit: {
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                 builder.setTitle(R.string.app_name);
-                builder.setIcon(R.mipmap.ic_launcher);
+                builder.setIcon(R.drawable.shoe);
                 builder.setMessage("Do you want to exit?")
                         .setCancelable(false)
                         .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                finish();
-                                System.exit(0);
+                                android.os.Process.killProcess(android.os.Process.myPid());
+                                System.exit(1);
                             }
                         })
                         .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -148,4 +171,6 @@ public class MainActivity extends AppCompatActivity implements RecyclerItemTouch
         }
         return super.onOptionsItemSelected(item);
     }
+
+
 }
