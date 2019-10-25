@@ -247,6 +247,7 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
                 }
                 dialog.dismiss();
                 Intent intent=new Intent(AddActivity.this,MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
             }
         }).start();
@@ -269,7 +270,7 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
             txtlayout.setError(input + " daxil edin");
             return false;
 
-        } else if (input.length() < 11) {
+        } else if (input.length() < 10) {
 
             txtlayout.setError(input + " telefon nömrəsini düzgün daxil edin");
             return false;

@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerItemTouch
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 list.clear();
-                ArrayList<String> keys = new ArrayList<String>();
+                ArrayList<String> keys = new ArrayList<>();
                 mprogressbar.setVisibility(View.VISIBLE);
                 if (dataSnapshot.getChildrenCount()==0)
                 {

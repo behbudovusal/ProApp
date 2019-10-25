@@ -3,11 +3,14 @@ package com.example.proapp;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,6 +30,7 @@ public class ProdetalActivity extends AppCompatActivity {
     TextView txtcustomer,txtadress=null,txtprice,txtphone,txtdate,txtdesc;
     CollapsingToolbarLayout collapsingToolbar;
     Toolbar toolbar;
+    String phone;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,7 +65,7 @@ public class ProdetalActivity extends AppCompatActivity {
             String time = getIntent().getStringExtra("item_time");
             String desc = getIntent().getStringExtra("item_desc");
             String id = getIntent().getStringExtra("item_id");
-            String phone = getIntent().getStringExtra("item_phone");
+             phone = getIntent().getStringExtra("item_phone");
             String imageurl = getIntent().getStringExtra("item_image");
             collapsingToolbar.setTitle(title);
             setheaderimgage(imageurl);
@@ -104,5 +108,12 @@ public class ProdetalActivity extends AppCompatActivity {
     public boolean onSupportNavigateUp() {
         onBackPressed();
         return super.onSupportNavigateUp();
+    }
+
+    public void callPhone(View view) {
+        Intent intent=new Intent(Intent.ACTION_DIAL);
+        intent.setData(Uri.parse("tel:"+phone));
+        startActivity(intent);
+
     }
 }
