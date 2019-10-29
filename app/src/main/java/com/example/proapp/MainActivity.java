@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -22,6 +23,7 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.database.DataSnapshot;
@@ -30,6 +32,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,24 +56,22 @@ public class MainActivity extends AppCompatActivity implements RecyclerItemTouch
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(R.string.app_name);
         recyclerView = findViewById(R.id.recycler_view);
-        mprogressbar=findViewById(R.id.progress_circular);
-        txtmehsul=findViewById(R.id.txtmehsul);
+        mprogressbar = findViewById(R.id.progress_circular);
+        txtmehsul = findViewById(R.id.txtmehsul);
         coordinatorLayout = findViewById(R.id.coordinator_layout);
         list = new ArrayList<>();
         reference = FirebaseDatabase.getInstance().getReference().child("product");
-        Query query=reference.orderByChild("date");
+        Query query = reference.orderByChild("date");
         query.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 list.clear();
                 ArrayList<String> keys = new ArrayList<>();
                 mprogressbar.setVisibility(View.VISIBLE);
-                if (dataSnapshot.getChildrenCount()==0)
-                {
+                if (dataSnapshot.getChildrenCount() == 0) {
                     txtmehsul.setVisibility(View.VISIBLE);
-                }
-                else {
-                txtmehsul.setVisibility(View.INVISIBLE);
+                } else {
+                    txtmehsul.setVisibility(View.INVISIBLE);
                 }
                 for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
                     Products p = dataSnapshot1.getValue(Products.class);
@@ -78,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerItemTouch
                     keys.add(dataSnapshot1.getKey());
 
                 }
-                mAdapter = new ProductAdapter(getApplicationContext(), list,keys);
+                mAdapter = new ProductAdapter(getApplicationContext(), list, keys);
                 RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
                 recyclerView.setLayoutManager(mLayoutManager);
                 recyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -109,29 +110,31 @@ public class MainActivity extends AppCompatActivity implements RecyclerItemTouch
     @Override
     public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction, int position) {
         if (viewHolder instanceof ProductAdapter.ProductViewHolder) {
+
+//            // backup of removed item for undo purpose
+            final Products deletedItem = list.get(viewHolder.getAdapterPosition());
+            final int deletedIndex = viewHolder.getAdapterPosition();
+            final String uri=list.get(viewHolder.getAdapterPosition()).getImg();
+//
+//            // get the removed item name to display it in snack bar
+            String name = list.get(viewHolder.getAdapterPosition()).getTitle();
+
             // remove the item from recycler view
             mAdapter.removeItem(viewHolder.getAdapterPosition());
 
-            // get the removed item name to display it in snack bar
-            //String name = list.get(viewHolder.getAdapterPosition()).getTitle();
+            // showing snack bar with Undo option
+            Snackbar snackbar = Snackbar
+                    .make(coordinatorLayout, "name" + " removed from cart!", Snackbar.LENGTH_LONG);
+            snackbar.setAction("UNDO", new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
 
-            // backup of removed item for undo purpose
-           // final Products deletedItem = list.get(viewHolder.getAdapterPosition());
-            //final int deletedIndex = viewHolder.getAdapterPosition();
-
-//            // showing snack bar with Undo option
-//            Snackbar snackbar = Snackbar
-//                    .make(coordinatorLayout, name + " removed from cart!", Snackbar.LENGTH_LONG);
-//            snackbar.setAction("UNDO", new View.OnClickListener() {
-//                @Override
-//                public void onClick(View view) {
-//
-//                    // undo is selected, restore the deleted item
-//                    mAdapter.restoreItem(deletedItem, deletedIndex);
-//                }
-//            });
-//            snackbar.setActionTextColor(Color.YELLOW);
-//            snackbar.show();
+                    // undo is selected, restore the deleted item
+                    mAdapter.restoreItem(deletedItem, deletedIndex,uri);
+                }
+            });
+            snackbar.setActionTextColor(Color.YELLOW);
+            snackbar.show();
         }
     }
 
