@@ -10,20 +10,14 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
-import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.database.DataSnapshot;
@@ -32,9 +26,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
-
 import java.util.ArrayList;
-import java.util.List;
+
 
 
 public class MainActivity extends AppCompatActivity implements RecyclerItemTouchHelper.RecyclerItemTouchHelperListener {
@@ -120,21 +113,21 @@ public class MainActivity extends AppCompatActivity implements RecyclerItemTouch
             String name = list.get(viewHolder.getAdapterPosition()).getTitle();
 
             // remove the item from recycler view
-            mAdapter.removeItem(viewHolder.getAdapterPosition());
+           // mAdapter.removeItem(viewHolder.getAdapterPosition());
 
             // showing snack bar with Undo option
-            Snackbar snackbar = Snackbar
-                    .make(coordinatorLayout, "name" + " removed from cart!", Snackbar.LENGTH_LONG);
-            snackbar.setAction("UNDO", new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-
-                    // undo is selected, restore the deleted item
-                    mAdapter.restoreItem(deletedItem, deletedIndex,uri);
-                }
-            });
-            snackbar.setActionTextColor(Color.YELLOW);
-            snackbar.show();
+//            Snackbar snackbar = Snackbar
+//                    .make(coordinatorLayout, "name" + " removed from cart!", Snackbar.LENGTH_LONG);
+//            snackbar.setAction("UNDO", new View.OnClickListener() {
+//                @Override
+//                public void onClick(View view) {
+//
+//                    // undo is selected, restore the deleted item
+//                    mAdapter.restoreItem(deletedItem, deletedIndex,uri);
+//                }
+//            });
+//            snackbar.setActionTextColor(Color.YELLOW);
+//            snackbar.show();
         }
     }
 
